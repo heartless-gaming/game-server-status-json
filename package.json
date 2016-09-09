@@ -1,0 +1,23 @@
+{
+  "name": "game-server-status-json",
+  "version": "1.0.0",
+  "description": "Get Heartless Gaming game server info and output them as json",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/heartless-gaming/game-server-status-json.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/heartless-gaming/game-server-status-json/issues"
+  },
+  "homepage": "https://github.com/heartless-gaming/game-server-status-json#readme",
+  "dependencies": {
+    "game-server-query": "^1.0.10"
+  }
+}
