@@ -1,59 +1,101 @@
+const color = require('chalk')
+const isIp = require('is-ip')
 const Promise = require('bluebird')
 const readFile = Promise.promisify(require('fs').readFile)
 const writeFile = Promise.promisify(require('fs').writeFile)
-const gameQuery = Promise.promisify(require('game-server-query'))
-// const serverMap = require('./heartlessgaming-serverinfo.json')
+const gameQuery = require('game-server-query')
 
 let log = console.log.bind(console)
-/*
-let doGameQuery = function (gameId, gameServerIp, gamePort) {
-  gameQuery({type: gameId, host: gameServerIp + ':' + gamePort})
-  .then(function (res) {
-    log(res)
-    return res
-  }).catch(function (err) {
-    if (err.error === 'UDP Watchdog Timeout') {
-      log('Server is offline')
-      return 'Server is offline'
-    } else {
-      // log(err)
-      return err
-    }
+
+let gameServerMap = 'heartlessgaming-serverinfo.json'
+
+let logResult = function (res) {
+  log(res)
+}
+
+let logError = function (err) {
+  log(color.yellow(err))
+}
+
+let readJson = function (json) {
+  return JSON.parse(json)
+}
+
+let doGameQuery = function (gameId, ip, queryPort) {
+  return new Promise(function (resolve, reject) {
+    return gameQuery({type: gameId, host: ip + ':' + queryPort}, function (res) {
+      if (res.error) reject('doGameQuery failed : ' + color.red(res.error))
+      else resolve(res)
+    })
   })
 }
-*/
-// doGameQuery('csgo', '91.121.154.84', 27015)
-readFile('heartlessgaming-serverinfo.json', 'utf8')
-  .then(function (serverMap) {
-    return JSON.parse(serverMap)
-  })
-  .then(function (parsedServerMap) {
-    // let gameServerQueries = []
-    return parsedServerMap.games.map(function (game) {
-      return Promise.all(game.gameServers.map(function (gameServer) {
-        return gameQuery({
-          type: game.gameId,
-          host: parsedServerMap.gameServerIp + ':' + gameServer.port
-        })
-      }))
-    })
-    // return Promise.all(gameServerQueries).then(function (res) {
-    //   return res
-    // })
 
-    // var files = []
-    // for (var i = 0; i < 5; ++i) {
-    //   files.push(writeFile('file-' + i + '.txt', '', 'utf-8'))
-    // }
-    // Promise.all(files).then(function (res) {
-    //   log()
-    // })
+/*
+ * Returns an array of doGameQuery funtion
+ */
+let getServerInfo = function (json) {
+  let gameServerJson = json
+
+  let getIp = function () {
+    return new Promise(function (resolve, reject) {
+      let ip = gameServerJson.gameServerIp
+
+      if (ip) {
+        if (isIp(ip)) resolve(ip)
+        else reject(color.yellow('Ip address badly formatted in json file.'))
+      } else {
+        reject(color.yellow('No ip found in json file.'))
+      }
+    })
+  }
+
+  let buildGameServerQueries = function (gameServerIp) {
+    return new Promise(function (resolve, reject) {
+      let ip = gameServerIp
+      let games = gameServerJson.games
+      let gameQueries = []
+
+      if (Array.isArray(games)) {
+        games.map(function (game) {
+          let gameId = game.gameId
+          if (gameId !== undefined) {
+            if (Array.isArray(game.gameServers)) {
+              game.gameServers.map(function (gameServer) {
+                let gameQueryPort = gameServer.queryPort
+                gameQueries.push(doGameQuery(gameId, ip, gameQueryPort))
+              })
+            } else {
+              reject(color.yellow('gameServers not an array in json file'))
+            }
+          }
+        })
+        resolve(gameQueries)
+      } else {
+        reject(color.yellow('Games not an array in json file.'))
+      }
+    })
+  }
+
+  return getIp(json)
+    .then(buildGameServerQueries)
+}
+
+let doGameQueries = function (gameQueries) {
+  return Promise.all(gameQueries)
+}
+
+let printPlayers = function (gameServersQueriesResult) {
+  gameServersQueriesResult.map(function (queryResult) {
+    log(queryResult.players.length + ' players on ' + queryResult.name)
   })
-  .then(function (queriesResult) {
-    log(queriesResult)
-  })
+}
+
+readFile(gameServerMap, 'utf8')
+  .then(readJson)
+  .then(getServerInfo)
+  .then(doGameQueries)
+  .then(printPlayers)
   .catch(function (err) {
-    log('ERROR')
     log(err)
   })
 
