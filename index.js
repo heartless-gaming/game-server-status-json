@@ -4,10 +4,15 @@ const Promise = require('bluebird')
 const readFile = Promise.promisify(require('fs').readFile)
 const writeFile = Promise.promisify(require('fs').writeFile)
 const gameQuery = require('game-server-query')
+const chokidar = require('chokidar')
+const moment = require('moment')
 
-let log = console.log.bind(console)
+const log = console.log.bind(console)
+const now = `[ ${moment().format('YYYY/MM/DD HH:mm:ss')} ]`
 
-let gameServerMap = 'heartlessgaming-serverinfo.json'
+
+const gameServerMap = 'heartlessgaming-serverinfo.json'
+const steamApiCallFile = 'heartlessgaming-steamapi.json'
 
 let logResult = function (res) {
   log(res)
@@ -23,7 +28,7 @@ let readJson = function (json) {
 
 let doGameQuery = function (gameId, ip, queryPort) {
   return new Promise(function (resolve, reject) {
-    return gameQuery({type: gameId, host: ip + ':' + queryPort}, function (res) {
+    return gameQuery({type: gameId, host: `${ip}:${queryPort} `}, function (res) {
       if (res.error) reject('doGameQuery failed : ' + color.red(res.error))
       else resolve(res)
     })
@@ -86,7 +91,7 @@ let doGameQueries = function (gameQueries) {
 
 let printPlayers = function (gameServersQueriesResult) {
   gameServersQueriesResult.map(function (queryResult) {
-    log(queryResult.players.length + ' players on ' + queryResult.name)
+    log(`${queryResult.players.length} players on ${queryResult.name}`)
   })
 }
 
@@ -98,5 +103,54 @@ readFile(gameServerMap, 'utf8')
   .catch(function (err) {
     log(err)
   })
+
+/*
+ * Send an email if a server is detected as 'bad version' or other if
+ * the server is not listed in the steammaster server.
+ */
+let watchSteamApiCallFile = chokidar.watch(steamApiCallFile)
+
+// Is valve sending us a reject field ?
+let isRejected = function (json) {
+  return new Promise(function (resolve, reject) {
+    if (json.response.success) {
+      let gameServers = json.response.servers
+      let gameServersErrors = []
+
+      // Search for reject field in the json file
+      gameServers.map(function (gameServer) {
+        if (gameServer.reject) gameServersErrors.push({'game': gameServer.gamedir, 'rejectReason': gameServer.reject})
+      })
+
+      if (gameServersErrors.length > 0) {
+        reject(gameServersErrors)
+      } else {
+        resolve(`${now} Steam api call OK`)
+      }
+    } else {
+      reject('${now} Response success is false')
+    }
+  })
+}
+
+let SteamApiCallError = function (err) {
+  if (Array.isArray(err)) {
+    err.map(function (gameError) {
+      log(color.yellow(`${now} ${gameError.game} as been rejected because: ${gameError.rejectReason}`))
+    })
+  } else {
+    log(color.yellow(err))
+  }
+}
+
+watchSteamApiCallFile
+  .on('change', (path, stats) => {
+    readFile(path)
+      .then(readJson)
+      .then(isRejected)
+      .then(logResult)
+      .catch(SteamApiCallError)
+  })
+  .on('error', error => log(`Watcher error: ${error}`))
 
 log('If you see me first congrats. This code is Asynchonous !')

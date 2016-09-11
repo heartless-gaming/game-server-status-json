@@ -134,7 +134,7 @@ let printPlayers = function (gameServersQueriesResult) {
 
 /*
  * Calling the steam masterserver
-*/
+ */
 let requestOptions = {
   uri: steamApiCallUrl,
   json: true

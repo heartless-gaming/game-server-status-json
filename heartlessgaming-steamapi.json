@@ -1,0 +1,97 @@
+{
+	"response": {
+		"success": true,
+		"servers": [
+			{
+				"addr": "91.121.154.84:27015",
+				"gmsindex": 65534,
+				"appid": 730,
+				"gamedir": "csgo",
+				"region": -1,
+				"secure": true,
+				"lan": false,
+				"gameport": 27015,
+				"specport": 0,
+				"reject": "bad_version"
+			},
+			{
+				"addr": "91.121.154.84:27016",
+				"gmsindex": 65534,
+				"appid": 730,
+				"gamedir": "csgo",
+				"region": -1,
+				"secure": true,
+				"lan": false,
+				"gameport": 27016,
+				"specport": 0
+			},
+			{
+				"addr": "91.121.154.84:27017",
+				"gmsindex": 65534,
+				"appid": 730,
+				"gamedir": "csgo",
+				"region": -1,
+				"secure": true,
+				"lan": false,
+				"gameport": 27017,
+				"specport": 0
+			},
+			{
+				"addr": "91.121.154.84:27018",
+				"gmsindex": 65534,
+				"appid": 222880,
+				"gamedir": "insurgency",
+				"region": 255,
+				"secure": true,
+				"lan": false,
+				"gameport": 27018,
+				"specport": 0
+			},
+			{
+				"addr": "91.121.154.84:27021",
+				"gmsindex": 65534,
+				"appid": 320,
+				"gamedir": "hl2mp",
+				"region": 255,
+				"secure": true,
+				"lan": false,
+				"gameport": 27021,
+				"specport": 0
+			},
+			{
+				"addr": "91.121.154.84:28852",
+				"gmsindex": 65534,
+				"appid": 1250,
+				"gamedir": "killingfloor",
+				"region": 255,
+				"secure": true,
+				"lan": false,
+				"gameport": 7707,
+				"specport": 0
+			},
+			{
+				"addr": "91.121.154.84:28853",
+				"gmsindex": 65534,
+				"appid": 1250,
+				"gamedir": "killingfloor",
+				"region": 255,
+				"secure": true,
+				"lan": false,
+				"gameport": 7708,
+				"specport": 0
+			},
+			{
+				"addr": "91.121.154.84:28854",
+				"gmsindex": 65534,
+				"appid": 1250,
+				"gamedir": "killingfloor",
+				"region": 255,
+				"secure": true,
+				"lan": false,
+				"gameport": 7709,
+				"specport": 0
+			}
+		]
+
+	}
+}
