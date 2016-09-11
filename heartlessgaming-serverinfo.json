@@ -66,16 +66,6 @@
 					"isSourceGame": true
 				}
 			]
-		},{
-			"gameName": "Black Mesa Source",
-			"gameServers": [
-				{
-					"servername": "Heartless Gaming | Black Mesa Source - Vanilla",
-					"port": 27022,
-					"queryPort": 27022,
-					"isSourceGame": true
-				}
-			]
 		}
 	]
 }

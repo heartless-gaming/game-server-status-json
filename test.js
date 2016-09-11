@@ -2,12 +2,14 @@ const color = require('chalk')
 const isIp = require('is-ip')
 const Promise = require('bluebird')
 const readFile = Promise.promisify(require('fs').readFile)
+const http = require('http')
 const writeFile = Promise.promisify(require('fs').writeFile)
 const gameQuery = require('game-server-query')
+const request = require('request-promise')
+const log = console.log.bind(console)
 
-let log = console.log.bind(console)
-
-let gameServerMap = 'heartlessgaming-serverinfo.json'
+const gameServerMap = 'heartlessgaming-serverinfo.json'
+const steamApiCallUrl = 'http://api.steampowered.com/ISteamApps/GetServersAtAddress/v0001?addr=91.121.154.84&format=json'
 
 let logResult = function (res) {
   log(res)
@@ -90,14 +92,14 @@ let printPlayers = function (gameServersQueriesResult) {
   })
 }
 
-readFile(gameServerMap, 'utf8')
-  .then(readJson)
-  .then(getServerInfo)
-  .then(doGameQueries)
-  .then(printPlayers)
-  .catch(function (err) {
-    log(err)
-  })
+// readFile(gameServerMap, 'utf8')
+//   .then(readJson)
+//   .then(getServerInfo)
+//   .then(doGameQueries)
+//   .then(printPlayers)
+//   .catch(function (err) {
+//     log(err)
+//   })
 
 /*
  * asynchonous gameQuery
@@ -129,5 +131,17 @@ readFile(gameServerMap, 'utf8')
 //     })
 //   })
 //   .catch(logError)
+
+/*
+ * Calling the steam masterserver
+*/
+let requestOptions = {
+  uri: steamApiCallUrl,
+  json: true
+}
+
+request(requestOptions)
+  .then(logResult)
+  .catch(logError)
 
 log('If you see me first congrats. This code is Asychonous !')

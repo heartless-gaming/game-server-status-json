@@ -99,4 +99,4 @@ readFile(gameServerMap, 'utf8')
     log(err)
   })
 
-log('If you see me first congrats. This code is Asychonous !')
+log('If you see me first congrats. This code is Asynchonous !')
