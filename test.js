@@ -1,10 +1,13 @@
 const color = require('chalk')
+const isIp = require('is-ip')
 const Promise = require('bluebird')
 const readFile = Promise.promisify(require('fs').readFile)
-// const gameQuery = Promise.promisify(require('game-server-query'))
+const writeFile = Promise.promisify(require('fs').writeFile)
 const gameQuery = require('game-server-query')
 
 let log = console.log.bind(console)
+
+let gameServerMap = 'heartlessgaming-serverinfo.json'
 
 let logResult = function (res) {
   log(res)
@@ -17,40 +20,68 @@ let logError = function (err) {
 let readJson = function (json) {
   return JSON.parse(json)
 }
+
 /*
+ * get the Params for the game query funtion
+ */
 let getServerInfo = function (json) {
-  // pass the ip and the rest of the json for the getgames
-  let getIp = function (json) {
+  let gameServerJson = json
+
+  let getIp = function () {
     return new Promise(function (resolve, reject) {
-      if (json.ip) {
-        resolve({'ip': json.ip, 'games': json.games})
+      let ip = gameServerJson.gameServerIp
+
+      if (ip) {
+        if (isIp(ip)) resolve(ip)
+        else reject(color.yellow('Ip address badly formatted in json file.'))
       } else {
-        reject(color.blue('No ip found in json file.'))
+        reject(color.yellow('No ip found in json file.'))
       }
     })
   }
 
-  let getGames = function (getIpResult) {
-    let ip = getIpResult.ip
-    let games = getIpResult.games
+  let getGames = function () {
+    return new Promise(function (resolve, reject) {
+      let games = gameServerJson.games
+      let gamesIds = []
 
-    return Promise.all(games.map(function (game) {
-      return {'ip': ip, gameId: game.gameId, 'gameServers': game.gameServers}
-    }))
+      if (Array.isArray(games)) {
+        games.map(function (game) {
+          gamesIds.push(game.gameId)
+        })
+        resolve(gamesIds)
+      } else {
+        reject(color.yellow('Games not an array in json file.'))
+      }
+    })
+  }
+  /*
+   * Returns an array of object with the GameIds and is gameQueryPorts
+   */
+  let getGameIdsAndPorts = function (getGamesResult) {
+    return new Promise(function (resolve, reject) {
+      let ports = []
+      getGames.then(function (games) {
+        games.map(function (game) {
+          if (Array.isArray(game.gameServer)) {
+            game.gameServers.map(function (gameServer) {
+              ports.push(gameServer.port)
+            })
+            resolve(ports)
+          } else {
+            reject(color.yellow('gameServers not an array in json file'))
+          }
+        })
+      })
+    })
   }
 
-  // let getGamesServer = function (getGamesResult) {
+  let gameQueryParams = [
+    getIp,
+    getGameIdsAndPorts
+  ]
 
-  // }
-
-  return getIp(json).then(getGames)
-}*/
-
-/*
- * Return an array object with game id, server ip and port
- */
-let getServerInfo = function (json) {
-
+  return Promise.all(gameQueryParams)
 }
 
 let doGameQuery = function (gameId, ip, port) {
@@ -62,11 +93,11 @@ let doGameQuery = function (gameId, ip, port) {
   })
 }
 
-// readFile('test.json', 'utf8')
-//   .then(readJson)
-//   .then(getServerInfo)
-//   .then(logResult)
-//   .catch(logError)
+readFile(gameServerMap, 'utf8')
+  .then(readJson)
+  .then(getServerInfo)
+  .then(logResult)
+  .catch(logError)
 
 /*
  * asynchonous gameQuery
@@ -80,25 +111,22 @@ let doGameQuery = function (gameId, ip, port) {
 //   setTimeout(function () { console.log('1 sec') }, 1000)
 // ]
 
-let serverQueries = [
-  doGameQuery('csgo', '91.121.154.84', 27016),
-  doGameQuery('csgo', '91.121.154.84', 27015),
-  doGameQuery('killingfloor', '91.121.154.84', 7708)
-]
+// let serverQueries = [
+//   doGameQuery('csgo', '91.121.154.84', 27016),
+//   doGameQuery('csgo', '91.121.154.84', 27015),
+//   doGameQuery('csgo', '91.121.154.84', 27017),
+//   doGameQuery('killingfloor', '91.121.154.84', 7708)
+// ]
 
-serverQueries.push(doGameQuery('killingfloor', '91.121.154.84', 7709))
+// serverQueries.push(doGameQuery('killingfloor', '91.121.154.84', 7709))
 
-Promise.race(serverQueries)
-  .then(function (res) {
-    log(res)
-    // res.map(function (serverRespond) {
-    //   log(serverRespond.name)
-    // })
-  })
-  .catch(logError)
-
-  // .then(logResult)
-  // .catch(logError)
-// doGameQuery('killingfloor', '91.121.154.84', 7708).then(logResult).catch(logError)
+// Promise.all(serverQueries)
+//   .then(function (res) {
+//     res.map(function (serverRespond) {
+//       log(serverRespond.name)
+//       log(serverRespond.players)
+//     })
+//   })
+//   .catch(logError)
 
 log('If you see me first congrats. This code is Asychonous !')

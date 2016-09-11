@@ -14,6 +14,11 @@
 					"serverName": "Heartless Gaming | Deathmatch FFA Only D2 - tick 128",
 					"port": 27016,
 					"isSourceGame": true
+				},
+				{
+					"serverName": "Heartless Gaming | Deathmatch FFA HSMOD Only D2 - tick 128",
+					"port": 27017,
+					"isSourceGame": true
 				}
 			]
 		},{
