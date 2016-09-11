@@ -21,9 +21,9 @@ let readJson = function (json) {
   return JSON.parse(json)
 }
 
-let doGameQuery = function (gameId, ip, port) {
+let doGameQuery = function (gameId, ip, queryPort) {
   return new Promise(function (resolve, reject) {
-    return gameQuery({type: gameId, host: ip + ':' + port}, function (res) {
+    return gameQuery({type: gameId, host: ip + ':' + queryPort}, function (res) {
       if (res.error) reject('doGameQuery failed : ' + color.red(res.error))
       else resolve(res)
     })
@@ -49,7 +49,7 @@ let getServerInfo = function (json) {
     })
   }
 
-  let getGameIdsAndPorts = function (gameServerIp) {
+  let buildGameServerQueries = function (gameServerIp) {
     return new Promise(function (resolve, reject) {
       let ip = gameServerIp
       let games = gameServerJson.games
@@ -61,8 +61,8 @@ let getServerInfo = function (json) {
           if (gameId !== undefined) {
             if (Array.isArray(game.gameServers)) {
               game.gameServers.map(function (gameServer) {
-                let gamePort = gameServer.port
-                gameQueries.push(doGameQuery(gameId, ip, gamePort))
+                let gameQueryPort = gameServer.queryPort
+                gameQueries.push(doGameQuery(gameId, ip, gameQueryPort))
               })
             } else {
               reject(color.yellow('gameServers not an array in json file'))
@@ -77,7 +77,7 @@ let getServerInfo = function (json) {
   }
 
   return getIp(json)
-    .then(getGameIdsAndPorts)
+    .then(buildGameServerQueries)
 }
 
 let doGameQueries = function (gameQueries) {
