@@ -17,7 +17,7 @@ let logError = function (err) {
 let readJson = function (json) {
   return JSON.parse(json)
 }
-
+/*
 let getServerInfo = function (json) {
   // pass the ip and the rest of the json for the getgames
   let getIp = function (json) {
@@ -44,6 +44,22 @@ let getServerInfo = function (json) {
   // }
 
   return getIp(json).then(getGames)
+}*/
+
+/*
+ * Return an array object with game id, server ip and port
+ */
+let getServerInfo = function (json) {
+
+}
+
+let doGameQuery = function (gameId, ip, port) {
+  return new Promise(function (resolve, reject) {
+    return gameQuery({type: gameId, host: ip + ':' + port}, function (res) {
+      if (res.error) reject(res.error)
+      else resolve(res)
+    })
+  })
 }
 
 // readFile('test.json', 'utf8')
@@ -52,46 +68,37 @@ let getServerInfo = function (json) {
 //   .then(logResult)
 //   .catch(logError)
 
-// let doGameQuery = function (gameId, gameServerIp, gamePort) {
-//   gameQuery({type: gameId, host: gameServerIp + ':' + gamePort})
-//     .then(function (res) {
-//       return res
-//     })
-// }
-
-// let serverQueries = [
-//   doGameQuery('csgo', '91.121.154.84', 27015),
-//   doGameQuery('csgo', '91.121.154.84', 27016),
-//   doGameQuery('killingfloor', '91.121.154.84', 7707),
-//   doGameQuery('killingfloor', '91.121.154.84', 7708)
+/*
+ * asynchonous gameQuery
+ */
+// let gameQueries = [
+//   doGameQuery('csgo', '91.121.154.84', 27015)
 // ]
 
-// doGameQuery('csgo', '91.121.154.84', 27015)
-//   .then(logResult)
-//   .catch(logError)
+// let topkek = [
+//   setTimeout(function () { console.log('2 sec') }, 2000),
+//   setTimeout(function () { console.log('1 sec') }, 1000)
+// ]
 
-// Promise.all(serverQueries)
-//   .then(logResult)
-//   .catch(logError)
+let serverQueries = [
+  doGameQuery('csgo', '91.121.154.84', 27016),
+  doGameQuery('csgo', '91.121.154.84', 27015),
+  doGameQuery('killingfloor', '91.121.154.84', 7708)
+]
 
-// gameQuery({type: 'csgo', host: '91.121.154.84:27015'})
-//   .then(logResult)
-//   .catch(logError)
+serverQueries.push(doGameQuery('killingfloor', '91.121.154.84', 7709))
 
-var doGameQuery = function (gameId, ip, port) {
-  return new Promise(function (resolve, reject) {
-    return gameQuery({type: gameId, host: ip + ':' + port}, function (res) {
-      if (res.error) {
-        reject(res.error)
-      } else {
-        resolve(res)
-      }
-    })
+Promise.race(serverQueries)
+  .then(function (res) {
+    log(res)
+    // res.map(function (serverRespond) {
+    //   log(serverRespond.name)
+    // })
   })
-}
-
-doGameQuery('csgo', '91.121.154.84', 27015)
-  .then(logResult)
   .catch(logError)
+
+  // .then(logResult)
+  // .catch(logError)
+// doGameQuery('killingfloor', '91.121.154.84', 7708).then(logResult).catch(logError)
 
 log('If you see me first congrats. This code is Asychonous !')
