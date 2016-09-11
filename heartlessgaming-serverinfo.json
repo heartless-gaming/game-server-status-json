@@ -17,7 +17,7 @@
 				},
 				{
 					"serverName": "Heartless Gaming | Deathmatch FFA HSMOD Only D2 - tick 128",
-					"port": 27016,
+					"port": 27017,
 					"isSourceGame": true
 				}
 			]
@@ -27,15 +27,15 @@
 			"gameServers": [
 				{
 					"serverName": "Heartless Gaming | HARD Long",
-					"port": 7707
-				},
-				{
-					"serverName": "Heartless Gaming | HARD Suicidal",
 					"port": 7708
 				},
 				{
-					"serverName": "Heartless Gaming | Killing Floor Private",
+					"serverName": "Heartless Gaming | HARD Suicidal",
 					"port": 7709
+				},
+				{
+					"serverName": "Heartless Gaming | Killing Floor Private",
+					"port": 7710
 				}
 			]
 		},{

@@ -21,8 +21,17 @@ let readJson = function (json) {
   return JSON.parse(json)
 }
 
+let doGameQuery = function (gameId, ip, port) {
+  return new Promise(function (resolve, reject) {
+    return gameQuery({type: gameId, host: ip + ':' + port}, function (res) {
+      if (res.error) reject('doGameQuery failed : ' + color.red(res.error))
+      else resolve(res)
+    })
+  })
+}
+
 /*
- * get the Params for the game query funtion
+ * Returns an array of doGameQuery funtion
  */
 let getServerInfo = function (json) {
   let gameServerJson = json
@@ -40,64 +49,55 @@ let getServerInfo = function (json) {
     })
   }
 
-  let getGames = function () {
+  let getGameIdsAndPorts = function (gameServerIp) {
     return new Promise(function (resolve, reject) {
+      let ip = gameServerIp
       let games = gameServerJson.games
-      let gamesIds = []
+      let gameQueries = []
 
       if (Array.isArray(games)) {
         games.map(function (game) {
-          gamesIds.push(game.gameId)
+          let gameId = game.gameId
+          if (gameId !== undefined) {
+            if (Array.isArray(game.gameServers)) {
+              game.gameServers.map(function (gameServer) {
+                let gamePort = gameServer.port
+                gameQueries.push(doGameQuery(gameId, ip, gamePort))
+              })
+            } else {
+              reject(color.yellow('gameServers not an array in json file'))
+            }
+          }
         })
-        resolve(gamesIds)
+        resolve(gameQueries)
       } else {
         reject(color.yellow('Games not an array in json file.'))
       }
     })
   }
-  /*
-   * Returns an array of object with the GameIds and is gameQueryPorts
-   */
-  let getGameIdsAndPorts = function (getGamesResult) {
-    return new Promise(function (resolve, reject) {
-      let ports = []
-      getGames.then(function (games) {
-        games.map(function (game) {
-          if (Array.isArray(game.gameServer)) {
-            game.gameServers.map(function (gameServer) {
-              ports.push(gameServer.port)
-            })
-            resolve(ports)
-          } else {
-            reject(color.yellow('gameServers not an array in json file'))
-          }
-        })
-      })
-    })
-  }
 
-  let gameQueryParams = [
-    getIp,
-    getGameIdsAndPorts
-  ]
-
-  return Promise.all(gameQueryParams)
+  return getIp(json)
+    .then(getGameIdsAndPorts)
 }
 
-let doGameQuery = function (gameId, ip, port) {
-  return new Promise(function (resolve, reject) {
-    return gameQuery({type: gameId, host: ip + ':' + port}, function (res) {
-      if (res.error) reject(res.error)
-      else resolve(res)
-    })
+let doGameQueries = function (gameQueries) {
+  return Promise.all(gameQueries)
+}
+
+let printPlayers = function (gameServersQueriesResult) {
+  gameServersQueriesResult.map(function (queryResult) {
+    log(queryResult.players.length + ' players on ' + queryResult.name)
   })
 }
 
 readFile(gameServerMap, 'utf8')
   .then(readJson)
   .then(getServerInfo)
-  .then(logResult)
-  .catch(logError)
+  .then(doGameQueries)
+  .then(printPlayers)
+  .catch(function (err) {
+    log(err)
+  })
 
 /*
  * asynchonous gameQuery
@@ -111,20 +111,21 @@ readFile(gameServerMap, 'utf8')
 //   setTimeout(function () { console.log('1 sec') }, 1000)
 // ]
 
-// let serverQueries = [
-//   doGameQuery('csgo', '91.121.154.84', 27016),
-//   doGameQuery('csgo', '91.121.154.84', 27015),
-//   doGameQuery('csgo', '91.121.154.84', 27017),
-//   doGameQuery('killingfloor', '91.121.154.84', 7708)
-// ]
+// let serverQueries = []
 
+// serverQueries.push(doGameQuery('csgo', '91.121.154.84', 27016))
+// serverQueries.push(doGameQuery('csgo', '91.121.154.84', 27015))
+// serverQueries.push(doGameQuery('csgo', '91.121.154.84', 27017))
+// serverQueries.push(doGameQuery('killingfloor', '91.121.154.84', 7708))
 // serverQueries.push(doGameQuery('killingfloor', '91.121.154.84', 7709))
+// serverQueries.push(doGameQuery('killingfloor', '91.121.154.84', 7710))
+// serverQueries.push(doGameQuery('insurgency', '91.121.154.84', 27018))
+// serverQueries.push(doGameQuery('hl2dm', '91.121.154.84', 27021))
 
 // Promise.all(serverQueries)
 //   .then(function (res) {
 //     res.map(function (serverRespond) {
-//       log(serverRespond.name)
-//       log(serverRespond.players)
+//       log(serverRespond.players.length + ' players on ' + serverRespond.name)
 //     })
 //   })
 //   .catch(logError)
