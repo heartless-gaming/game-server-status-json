@@ -11,8 +11,7 @@
 				"secure": true,
 				"lan": false,
 				"gameport": 27015,
-				"specport": 0,
-				"reject": "bad_version"
+				"specport": 0
 			},
 			{
 				"addr": "91.121.154.84:27016",

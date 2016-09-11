@@ -8,8 +8,6 @@ const chokidar = require('chokidar')
 const moment = require('moment')
 
 const log = console.log.bind(console)
-const now = `[ ${moment().format('YYYY/MM/DD HH:mm:ss')} ]`
-
 
 const gameServerMap = 'heartlessgaming-serverinfo.json'
 const steamApiCallFile = 'heartlessgaming-steamapi.json'
@@ -113,6 +111,8 @@ let watchSteamApiCallFile = chokidar.watch(steamApiCallFile)
 // Is valve sending us a reject field ?
 let isRejected = function (json) {
   return new Promise(function (resolve, reject) {
+    const now = `[ ${moment().format('YYYY/MM/DD HH:mm:ss')} ]`
+
     if (json.response.success) {
       let gameServers = json.response.servers
       let gameServersErrors = []
@@ -134,6 +134,8 @@ let isRejected = function (json) {
 }
 
 let SteamApiCallError = function (err) {
+  const now = `[ ${moment().format('YYYY/MM/DD HH:mm:ss')} ]`
+
   if (Array.isArray(err)) {
     err.map(function (gameError) {
       log(color.yellow(`${now} ${gameError.game} as been rejected because: ${gameError.rejectReason}`))
