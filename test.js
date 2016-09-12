@@ -156,7 +156,7 @@ let sendEmail = function (mailContent) {
     let mailFrom = ['game-server-status@heartlessgaming.com']
     let mailTo = ['skullmasher@heartlessgaming.com']
 
-    var transporter = nodemailer.createTransport(sendmailTransport({
+    let transporter = nodemailer.createTransport(sendmailTransport({
       path: '/usr/bin/mail/'
     }))
 
