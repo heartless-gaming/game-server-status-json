@@ -157,7 +157,7 @@ let sendEmail = function (mailContent) {
     let mailTo = ['skullmasher@heartlessgaming.com']
 
     var transporter = nodemailer.createTransport(sendmailTransport({
-      path: '/usr/lib/sendmail/'
+      path: '/usr/bin/mail/'
     }))
 
     transporter.sendMail({
