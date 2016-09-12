@@ -6,6 +6,8 @@ const writeFile = Promise.promisify(require('fs').writeFile)
 const gameQuery = require('game-server-query')
 const chokidar = require('chokidar')
 const moment = require('moment')
+const nodemailer = require('nodemailer')
+const sendmailTransport = require('nodemailer-sendmail-transport')
 
 const log = console.log.bind(console)
 
@@ -119,7 +121,7 @@ let isRejected = function (json) {
 
       // Search for reject field in the json file
       gameServers.map(function (gameServer) {
-        if (gameServer.reject) gameServersErrors.push({'game': gameServer.gamedir, 'rejectReason': gameServer.reject})
+        if (gameServer.reject) gameServersErrors.push({'game': gameServer.gamedir, 'gamePort': gameServer.gameport, 'rejectReason': gameServer.reject})
       })
 
       if (gameServersErrors.length > 0) {
@@ -128,7 +130,7 @@ let isRejected = function (json) {
         resolve(`${now} Steam api call OK`)
       }
     } else {
-      reject('${now} Response success is false')
+      reject('Response success is false')
     }
   })
 }
@@ -136,13 +138,65 @@ let isRejected = function (json) {
 let SteamApiCallError = function (err) {
   const now = `[ ${moment().format('YYYY/MM/DD HH:mm:ss')} ]`
 
-  if (Array.isArray(err)) {
-    err.map(function (gameError) {
-      log(color.yellow(`${now} ${gameError.game} as been rejected because: ${gameError.rejectReason}`))
+  let prepareMailContent = function () {
+    return new Promise(function (resolve) {
+      let mailContent = {html: '', text: ''}
+
+      if (Array.isArray(err)) {
+        err.map(function (gameError) {
+          mailContent.html += `<p>${now} ${gameError.game} on port ${gameError.gamePort} as been rejected because: ${gameError.rejectReason}</p>`
+          mailContent.text += `${now} ${gameError.game} on port ${gameError.gamePort} as been rejected because: ${gameError.rejectReason}`
+        })
+        resolve(mailContent)
+      } else {
+        mailContent.html = err
+        mailContent.text = err
+        resolve(mailContent)
+      }
     })
-  } else {
-    log(color.yellow(err))
   }
+
+  /*
+   * Send mail to alert an Heartless Member
+   * Content must be an html string
+   */
+  let sendEmail = function (mailContent) {
+    return new Promise(function (resolve, reject) {
+      let mailSubject = '[Game Server Status] TIME TO FIX YOUR FUCKING SERVER'
+      let mailFrom = ['game-server-status@heartlessgaming.com']
+      let mailTo = ['skullmasher@heartlessgaming.com']
+
+      var transporter = nodemailer.createTransport(sendmailTransport({
+        path: '/usr/sbin/sendmail'
+      }))
+
+      transporter.sendMail({
+        from: mailFrom,
+        to: mailTo,
+        subject: mailSubject,
+        html: mailContent
+      }, function (err, info) {
+        if (err) {
+          log(err)
+          reject(err)
+        } else {
+          if (info.accepted.length !== 0) {
+            log(`${now} Mail as been sent to : ${info.accepted}`)
+            resolve(`${now} Mail as been sent to : ${info.accepted}`)
+          } else {
+            log('The mail was not accepted.')
+            log(info)
+            reject(info)
+          }
+        }
+      })
+    })
+  }
+
+  return prepareMailContent()
+    .then(sendEmail)
+    .then(logResult)
+    .catch(logError)
 }
 
 watchSteamApiCallFile

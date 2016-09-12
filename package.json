@@ -24,6 +24,8 @@
     "game-server-query": "^1.0.10",
     "is-ip": "^1.0.0",
     "moment": "^2.14.1",
+    "nodemailer": "^2.6.0",
+    "nodemailer-sendmail-transport": "^1.0.0",
     "request": "^2.74.0",
     "request-promise": "^4.1.1"
   }

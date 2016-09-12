@@ -6,6 +6,9 @@ const http = require('http')
 const writeFile = Promise.promisify(require('fs').writeFile)
 const gameQuery = require('game-server-query')
 const request = require('request-promise')
+const nodemailer = require('nodemailer')
+const sendmailTransport = require('nodemailer-sendmail-transport')
+
 const log = console.log.bind(console)
 
 const gameServerMap = 'heartlessgaming-serverinfo.json'
@@ -135,12 +138,52 @@ let printPlayers = function (gameServersQueriesResult) {
 /*
  * Calling the steam masterserver
  */
-let requestOptions = {
-  uri: steamApiCallUrl,
-  json: true
-}
+// let requestOptions = {
+//   uri: steamApiCallUrl,
+//   json: true
+// }
 
-request(requestOptions)
+// request(requestOptions)
+//   .then(logResult)
+//   .catch(logError)
+
+/*
+ * Testting mail sending
+ */
+let sendEmail = function (mailContent) {
+  return new Promise(function (resolve, reject) {
+    let mailSubject = '[Game Server Status] TIME TO FIX YOUR FUCKING SERVER'
+    let mailFrom = ['game-server-status@heartlessgaming.com']
+    let mailTo = ['skullmasher@heartlessgaming.com']
+
+    var transporter = nodemailer.createTransport(sendmailTransport({
+      path: '/usr/lib/sendmail/'
+    }))
+
+    transporter.sendMail({
+      from: mailFrom,
+      to: mailTo,
+      subject: mailSubject,
+      html: mailContent
+    }, function (err, info) {
+      if (err) {
+        log(err)
+        reject(err)
+      } else {
+        log(info)
+        // if (info.accepted.length !== 0) {
+        //   log(`Mail as been sent to : ${info.accepted}`)
+        //   resolve(`Mail as been sent to : ${info.accepted}`)
+        // } else {
+        //   log('The mail was not accepted.')
+        //   log(info)
+        //   reject(info)
+        // }
+      }
+    })
+  })
+}
+sendEmail('<h1>Hello There</h1>')
   .then(logResult)
   .catch(logError)
 
