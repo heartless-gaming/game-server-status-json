@@ -111,33 +111,76 @@ let doGameQueries = function (gameQueries) {
 }
 
 /*
- * Console.log out the players playing on each game server.
+ * Build an array that put each game query result into is own game
  */
-let printPlayers = function (gameServersQueriesResult) {
-  gameServersQueriesResult.map(function (queryResult) {
-    log(`${queryResult.players.length} players on ${queryResult.name}`)
-  })
+let formatQueriesResult = function (gameServersQueriesResult) {
+  let formatedQueriesResult = [
+    [
+      {players: ['topkek', 'foo', 'bar'], maxplayers: 666},
+      {players: ['topkek', 'foo', 'bar'], maxplayers: 666},
+      {players: ['topkek', 'foo', 'bar'], maxplayers: 666}
+    ],
+    [
+      {players: ['topkek', 'foo', 'bar'], maxplayers: 666},
+      {players: ['topkek', 'foo', 'bar'], maxplayers: 666},
+      {players: ['topkek', 'foo', 'bar'], maxplayers: 666}
+    ],
+    [
+      {players: ['topkek', 'foo', 'bar'], maxplayers: 666},
+      {players: ['topkek', 'foo', 'bar'], maxplayers: 666},
+      {players: ['topkek', 'foo', 'bar'], maxplayers: 666}
+    ],
+    [
+      {players: ['topkek', 'foo', 'bar'], maxplayers: 666},
+      {players: ['topkek', 'foo', 'bar'], maxplayers: 666},
+      {players: ['topkek', 'foo', 'bar'], maxplayers: 666}
+    ],
+    [
+      {players: ['topkek', 'foo', 'bar'], maxplayers: 666},
+      {players: ['topkek', 'foo', 'bar'], maxplayers: 666},
+      {players: ['topkek', 'foo', 'bar'], maxplayers: 666}
+    ],
+    [
+      {players: ['topkek', 'foo', 'bar'], maxplayers: 666},
+      {players: ['topkek', 'foo', 'bar'], maxplayers: 666},
+      {players: ['topkek', 'foo', 'bar'], maxplayers: 666}
+    ],
+    [
+      {players: ['topkek', 'foo', 'bar'], maxplayers: 666},
+      {players: ['topkek', 'foo', 'bar'], maxplayers: 666},
+      {players: ['topkek', 'foo', 'bar'], maxplayers: 666}
+    ],
+    [
+      {players: ['topkek', 'foo', 'bar'], maxplayers: 666},
+      {players: ['topkek', 'foo', 'bar'], maxplayers: 666},
+      {players: ['topkek', 'foo', 'bar'], maxplayers: 666}
+    ]
+  ]
+
+  // gameServersQueriesResult.map(function (gameServerQuery) {
+  //   return formatedQueriesResult.push()
+  // })
+  return formatedQueriesResult
 }
 
 /*
  *  Build a json containing all the game server info to be used by the frontend
  */
-let updateGameStatusJson = function (gameServersQueriesResult) {
+let updateGameStatusJson = function (formatedQueriesResult) {
   let updateGameServersInfo = function (gameServerMap) {
     let gameServersInfo = gameServerMap
 
-    log(gameServersQueriesResult.length)
-    let kek = 0
+    // log(formatedQueriesResult[0])
+    // log()
+    // log(gameServersInfo.games[0].gameServers)
     for (let i = 0, l = gameServersInfo.games.length; i < l; i++) {
       let games = gameServersInfo.games
-      kek += games[i].gameServers.length
-  //     for (let j = 0, l = games[i].gameServers.length; j < l; j++) {
-  //       // log(`${games[i].gameServers[j].serverName} | ${gameServersQueriesResult[j].players.length} / ${gameServersQueriesResult[j].maxplayers}`)
-  //       games[i].gameServers[j].players = `${gameServersQueriesResult[j].players.length} / ${gameServersQueriesResult[j].maxplayers}`
-  //       log(games[i].gameServers[j])
-  //     }
+      for (let j = 0, l = games[i].gameServers.length; j < l; j++) {
+        // log(`${games[i].gameServers[j].serverName} | ${formatedQueriesResult[k].players.length} / ${formatedQueriesResult[k].maxplayers}`)
+        games[i].gameServers[j].players = `${formatedQueriesResult[i][j].players.length} / ${formatedQueriesResult[i][j].maxplayers}`
+        log(games[i].gameServers[j])
+      }
     }
-    log(kek)
   }
 
   let writeGameServerStatusJson = function (jsonData) {
@@ -151,6 +194,7 @@ let updateGameStatusJson = function (gameServersQueriesResult) {
 readJson(gameServerMap)
   .then(getServerInfo)
   .then(doGameQueries)
+  .then(formatQueriesResult)
   .then(updateGameStatusJson)
   .catch(logError)
 
