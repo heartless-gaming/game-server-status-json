@@ -12,7 +12,7 @@ const sendmailTransport = require('nodemailer-sendmail-transport')
 const log = console.log.bind(console)
 
 const gameServerMap = 'heartlessgaming-serverinfo.json'
-const steamApiCallUrl = 'http://api.steampowered.com/ISteamApps/GetServersAtAddress/v0001?addr=91.121.154.84&format=json'
+const gameServerStatusJsonFile = 'heartlessgaming-serverstatus.json'
 
 let logResult = function (res) {
   log(res)
@@ -183,7 +183,14 @@ let sendEmail = function (mailContent) {
     })
   })
 }
-sendEmail('<h1>Hello There</h1>')
+// sendEmail('<h1>Hello There</h1>')
+//   .then(logResult)
+//   .catch(logError)
+
+/*
+ * Learning the promise way of writing a file with nodeJS
+ */
+writeFile(gameServerStatusJsonFile, 'utf8')
   .then(logResult)
   .catch(logError)
 
