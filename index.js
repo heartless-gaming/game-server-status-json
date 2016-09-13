@@ -11,7 +11,7 @@ const sendmailTransport = require('nodemailer-sendmail-transport')
 
 const log = console.log.bind(console)
 
-const gameServerMap = 'heartlessgaming-serverinfo.json'
+const gameServerMap = 'heartlessgaming-servermap.json'
 const gameServerStatusJson = 'heartlessgaming-serverstatus.json'
 
 let logResult = function (res) {
@@ -123,9 +123,29 @@ let printPlayers = function (gameServersQueriesResult) {
  *  Build a json containing all the game server info to be used by the frontend
  */
 let updateGameStatusJson = function (gameServersQueriesResult) {
-  gameServersQueriesResult.map(function (queryResult) {
-    log(`${queryResult.players.length} players on ${queryResult.name}`)
-  })
+  let updateGameServersInfo = function (gameServerMap) {
+    let gameServersInfo = gameServerMap
+
+    log(gameServersQueriesResult.length)
+    let kek = 0
+    for (let i = 0, l = gameServersInfo.games.length; i < l; i++) {
+      let games = gameServersInfo.games
+      kek += games[i].gameServers.length
+  //     for (let j = 0, l = games[i].gameServers.length; j < l; j++) {
+  //       // log(`${games[i].gameServers[j].serverName} | ${gameServersQueriesResult[j].players.length} / ${gameServersQueriesResult[j].maxplayers}`)
+  //       games[i].gameServers[j].players = `${gameServersQueriesResult[j].players.length} / ${gameServersQueriesResult[j].maxplayers}`
+  //       log(games[i].gameServers[j])
+  //     }
+    }
+    log(kek)
+  }
+
+  let writeGameServerStatusJson = function (jsonData) {
+    return writeFile(gameServerStatusJson, jsonData)
+  }
+  return readJson(gameServerMap)
+    .then(updateGameServersInfo)
+    // .then(writeGameServerStatusJson)
 }
 
 readJson(gameServerMap)
