@@ -29,11 +29,13 @@ let readJson = function (jsonFile) {
     })
   }
 
+  let parsingError = function () {
+    log(`Parsing of ${jsonFile} failed`)
+  }
+
   return readFile(jsonFile, 'utf8')
     .then(parseJson)
-    .catch(function () {
-      log(`Parsing of ${jsonFile} failed`)
-    })
+    .catch(parsingError)
 }
 
 let doGameQuery = function (gameId, ip, queryPort) {
@@ -109,7 +111,6 @@ let updateGameStatusJson = function (gameServersQueriesResult) {
   gameServersQueriesResult.map(function (queryResult) {
     log(`${queryResult.players.length} players on ${queryResult.name}`)
   })
-
 }
 
 readJson(gameServerMap)
