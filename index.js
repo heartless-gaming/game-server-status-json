@@ -22,8 +22,18 @@ let logError = function (err) {
   log(color.yellow(err))
 }
 
-let readJson = function (json) {
-  return JSON.parse(json)
+let readJson = function (jsonFile) {
+  let parseJson = function (json) {
+    return new Promise(function (resolve) {
+      resolve(JSON.parse(json))
+    })
+  }
+
+  return readFile(jsonFile, 'utf8')
+    .then(parseJson)
+    .catch(function () {
+      log(`Parsing of ${jsonFile} failed`)
+    })
 }
 
 let doGameQuery = function (gameId, ip, queryPort) {
@@ -97,12 +107,12 @@ let printPlayers = function (gameServersQueriesResult) {
 
 let updateGameStatusJson = function (gameServersQueriesResult) {
   gameServersQueriesResult.map(function (queryResult) {
-    log(queryResult)
+    log(`${queryResult.players.length} players on ${queryResult.name}`)
   })
+
 }
 
-readFile(gameServerMap, 'utf8')
-  .then(readJson)
+readJson(gameServerMap)
   .then(getServerInfo)
   .then(doGameQueries)
   .then(updateGameStatusJson)
