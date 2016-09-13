@@ -22,6 +22,9 @@ let logError = function (err) {
   log(color.yellow(err))
 }
 
+/*
+ * Returns a parsed json file
+ */
 let readJson = function (jsonFile) {
   let parseJson = function (json) {
     return new Promise(function (resolve) {
@@ -38,6 +41,9 @@ let readJson = function (jsonFile) {
     .catch(parsingError)
 }
 
+/*
+ * Return the result of a game server query
+ */
 let doGameQuery = function (gameId, ip, queryPort) {
   return new Promise(function (resolve, reject) {
     return gameQuery({type: gameId, host: `${ip}:${queryPort} `}, function (res) {
@@ -97,16 +103,25 @@ let getServerInfo = function (json) {
     .then(buildGameServerQueries)
 }
 
+/*
+ * Actually execute an array of game server query all at the same time.
+ */
 let doGameQueries = function (gameQueries) {
   return Promise.all(gameQueries)
 }
 
+/*
+ * Console.log out the players playing on each game server.
+ */
 let printPlayers = function (gameServersQueriesResult) {
   gameServersQueriesResult.map(function (queryResult) {
     log(`${queryResult.players.length} players on ${queryResult.name}`)
   })
 }
 
+/*
+ *  Build a json containing all the game server info to be used by the frontend
+ */
 let updateGameStatusJson = function (gameServersQueriesResult) {
   gameServersQueriesResult.map(function (queryResult) {
     log(`${queryResult.players.length} players on ${queryResult.name}`)
