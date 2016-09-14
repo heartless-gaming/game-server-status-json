@@ -42,6 +42,30 @@ let readJson = function (jsonFile) {
 }
 
 /*
+ * Write a json file
+ */
+let writeJson = function (jsonFileName, fileContent) {
+  let encodeJson = function (json) {
+    return new Promise(function (resolve) {
+      resolve(JSON.stringify(json))
+    })
+  }
+
+  let encodeError = function () {
+    log(`writing of ${jsonFileName} FAILED`)
+  }
+
+  let writeJsonFile = function (encodedJson) {
+    log(encodedJson)
+    return writeFile(jsonFileName, encodedJson)
+  }
+
+  return encodeJson(fileContent)
+    .then(writeJsonFile)
+    .catch(encodeError)
+}
+
+/*
  * Return the result of a game server query
  */
 let doGameQuery = function (gameId, ip, queryPort) {
@@ -56,9 +80,7 @@ let doGameQuery = function (gameId, ip, queryPort) {
 /*
  * Returns an array of doGameQuery funtion
  */
-let getServerInfo = function (json) {
-  let gameServerJson = json
-
+let buildGameQueries = function (gameServerJson) {
   let getIp = function () {
     return new Promise(function (resolve, reject) {
       let ip = gameServerJson.gameServerIp
@@ -99,7 +121,7 @@ let getServerInfo = function (json) {
     })
   }
 
-  return getIp(json)
+  return getIp(gameServerJson)
     .then(buildGameServerQueries)
 }
 
@@ -111,55 +133,23 @@ let doGameQueries = function (gameQueries) {
 }
 
 /*
- * Build an array that put each game query result into is own game
+ * Build an array that put each game query result into is own game array
  */
 let formatQueriesResult = function (gameServersQueriesResult) {
-  let formatedQueriesResult = [
-    [
-      {players: ['topkek', 'foo', 'bar'], maxplayers: 666},
-      {players: ['topkek', 'foo', 'bar'], maxplayers: 666},
-      {players: ['topkek', 'foo', 'bar'], maxplayers: 666}
-    ],
-    [
-      {players: ['topkek', 'foo', 'bar'], maxplayers: 666},
-      {players: ['topkek', 'foo', 'bar'], maxplayers: 666},
-      {players: ['topkek', 'foo', 'bar'], maxplayers: 666}
-    ],
-    [
-      {players: ['topkek', 'foo', 'bar'], maxplayers: 666},
-      {players: ['topkek', 'foo', 'bar'], maxplayers: 666},
-      {players: ['topkek', 'foo', 'bar'], maxplayers: 666}
-    ],
-    [
-      {players: ['topkek', 'foo', 'bar'], maxplayers: 666},
-      {players: ['topkek', 'foo', 'bar'], maxplayers: 666},
-      {players: ['topkek', 'foo', 'bar'], maxplayers: 666}
-    ],
-    [
-      {players: ['topkek', 'foo', 'bar'], maxplayers: 666},
-      {players: ['topkek', 'foo', 'bar'], maxplayers: 666},
-      {players: ['topkek', 'foo', 'bar'], maxplayers: 666}
-    ],
-    [
-      {players: ['topkek', 'foo', 'bar'], maxplayers: 666},
-      {players: ['topkek', 'foo', 'bar'], maxplayers: 666},
-      {players: ['topkek', 'foo', 'bar'], maxplayers: 666}
-    ],
-    [
-      {players: ['topkek', 'foo', 'bar'], maxplayers: 666},
-      {players: ['topkek', 'foo', 'bar'], maxplayers: 666},
-      {players: ['topkek', 'foo', 'bar'], maxplayers: 666}
-    ],
-    [
-      {players: ['topkek', 'foo', 'bar'], maxplayers: 666},
-      {players: ['topkek', 'foo', 'bar'], maxplayers: 666},
-      {players: ['topkek', 'foo', 'bar'], maxplayers: 666}
-    ]
-  ]
+  let formatedQueriesResult = [[]]
+  let previousGame = gameServersQueriesResult[0].query.type
+  let i = 0
 
-  // gameServersQueriesResult.map(function (gameServerQuery) {
-  //   return formatedQueriesResult.push()
-  // })
+  gameServersQueriesResult.map(function (gameServerQuery) {
+    // Si la gameServerQuery.query.type changent je pouse les requete suivante dans la suite de l'array formatedQueriesResult
+    if (previousGame === gameServerQuery.query.type) {
+      formatedQueriesResult[i].push({players: gameServerQuery.players.length, maxplayers: gameServerQuery.maxplayers})
+    } else {
+      i++
+      previousGame = gameServerQuery.query.type
+      formatedQueriesResult[i] = [{players: gameServerQuery.players.length, maxplayers: gameServerQuery.maxplayers}]
+    }
+  })
   return formatedQueriesResult
 }
 
@@ -167,35 +157,36 @@ let formatQueriesResult = function (gameServersQueriesResult) {
  *  Build a json containing all the game server info to be used by the frontend
  */
 let updateGameStatusJson = function (formatedQueriesResult) {
+  let readGameServerMap = function () {
+    return readJson(gameServerMap)
+  }
+
   let updateGameServersInfo = function (gameServerMap) {
     let gameServersInfo = gameServerMap
-
-    // log(formatedQueriesResult[0])
-    // log()
-    // log(gameServersInfo.games[0].gameServers)
     for (let i = 0, l = gameServersInfo.games.length; i < l; i++) {
       let games = gameServersInfo.games
       for (let j = 0, l = games[i].gameServers.length; j < l; j++) {
-        // log(`${games[i].gameServers[j].serverName} | ${formatedQueriesResult[k].players.length} / ${formatedQueriesResult[k].maxplayers}`)
-        games[i].gameServers[j].players = `${formatedQueriesResult[i][j].players.length} / ${formatedQueriesResult[i][j].maxplayers}`
-        log(games[i].gameServers[j])
+        games[i].gameServers[j].players = `${formatedQueriesResult[i][j].players} / ${formatedQueriesResult[i][j].maxplayers}`
       }
     }
+
+    return gameServersInfo
   }
 
-  let writeGameServerStatusJson = function (jsonData) {
-    return writeFile(gameServerStatusJson, jsonData)
-  }
-  return readJson(gameServerMap)
+  return readGameServerMap()
     .then(updateGameServersInfo)
-    // .then(writeGameServerStatusJson)
+}
+
+let writeGameServerStatusJson = function (fileContent) {
+  return writeJson(gameServerStatusJson, fileContent)
 }
 
 readJson(gameServerMap)
-  .then(getServerInfo)
+  .then(buildGameQueries)
   .then(doGameQueries)
   .then(formatQueriesResult)
   .then(updateGameStatusJson)
+  .then(writeGameServerStatusJson)
   .catch(logError)
 
 log('If you see me first congrats. This code is Asynchonous !')
